@@ -1,0 +1,20 @@
+{
+    "name": "dab/waesel-bundle",
+    "version": "1.0.0",
+    "type": "symfony-bundle",
+    "authors": [
+        {
+            "name": "dab",
+            "email": "uncle.demian@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=8.0",
+        "symfony/framework-bundle": "5.2.*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Dab\\Weasel\\" : "./src/"
+        }
+    }
+}

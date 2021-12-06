@@ -1,0 +1,5 @@
+{
+    "bundles": {
+        "Dab\\Weasel\\WeaselBundle": ["all"]
+    }
+}
