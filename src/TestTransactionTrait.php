@@ -1,10 +1,10 @@
-<?php declare(strict_types=1);
+<?php
 
 namespace Dab\Weasel;
 
 use Doctrine\ORM\EntityManagerInterface;
 
-class WeaselDbTestCase extends WeaselTestCase {
+trait TestTransactionTrait {
   /** @RequiredForTest */
   protected ?EntityManagerInterface $entityManager = null;
 
@@ -18,5 +18,10 @@ class WeaselDbTestCase extends WeaselTestCase {
     $this->entityManager->rollback();
     $this->entityManager->close();
     parent::tearDown();
+  }
+
+  protected function afterInjectProperties(array $injectedValues): void {
+    parent::afterInjectProperties($injectedValues);
+    $this->entityManager->flush();
   }
 }

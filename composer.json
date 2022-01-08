@@ -10,9 +10,9 @@
     ],
     "require": {
         "php": ">=8.0",
-        "symfony/framework-bundle": "5.2.*",
+        "symfony/framework-bundle": "^5.4",
         "phpunit/phpunit": "^9.5",
-        "symfony/phpunit-bridge": "^5.2"
+        "symfony/phpunit-bridge": "^5.4"
     },
     "autoload": {
         "psr-4": {
