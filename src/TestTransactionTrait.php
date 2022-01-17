@@ -8,12 +8,6 @@ trait TestTransactionTrait {
   /** @RequiredForTest */
   protected ?EntityManagerInterface $entityManager = null;
 
-  protected function setUp(): void {
-    parent::setUp();
-
-    $this->entityManager->beginTransaction();
-  }
-
   public function tearDown(): void {
     $this->entityManager->rollback();
     $this->entityManager->close();
@@ -21,6 +15,7 @@ trait TestTransactionTrait {
   }
 
   protected function afterInjectProperties(array $injectedValues): void {
+    $this->entityManager->beginTransaction();
     parent::afterInjectProperties($injectedValues);
     $this->entityManager->flush();
   }
