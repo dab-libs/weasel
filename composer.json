@@ -2,6 +2,7 @@
     "name": "dab-libs/waesel-bundle",
     "version": "1.0.0",
     "type": "symfony-bundle",
+    "license": "MIT",
     "authors": [
         {
             "name": "dab-libs",
