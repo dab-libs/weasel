@@ -1,10 +1,10 @@
 {
-    "name": "dab/waesel-bundle",
+    "name": "dab-libs/waesel-bundle",
     "version": "1.0.0",
     "type": "symfony-bundle",
     "authors": [
         {
-            "name": "dab",
+            "name": "dab-libs",
             "email": "uncle.demian@gmail.com"
         }
     ],
