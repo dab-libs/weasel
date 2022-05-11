@@ -13,19 +13,93 @@ $ composer require --dev dab-libs/waesel-bundle
 
 ## Использование
 
-1. Установите Weasel
-2. Создайте класс тестового контекста, и опишите в нём в виде публичных полей все необходимые для теста сервисы.
-   Инициализируйте эти поля через параметры конструктора
-3. Создайте класс фикстуры, реализовав интерфейс Fixture. Метод createData интерфейса Fixture, который предназначен для
-   создания начального состояния базы данных, будет вызван автоматически перед запуском Вашего теста
-4. Опишите классы тестового контекста и фикстуры как сервисы, сделав их публичными
-5. Унаследуйте тестовый класс от одного из классов из библиотеки Weasel, например, от DbTestCase
-6. Опишите в этом классе поля для тестового контекста и фикстуры и пометьте их аннотацией @RequiredForTest
+Пусть необходимо протестировать сервис поиска петов по имени или идентификатору. Этот сервис реализует следующий
+интерфейс:
 
-Теперь при запуске теста в базовом методе setUp сервисы классов тестового контекста и фикстуры будут автоматически
-запрошены из контейнера зависимостей и присвоены соответствующим полям тестового класса. Затем у сервиса фикстуры будет
-вызван метод createData. И уже после этого будет выполнен тестовый метод, в котором можно свободно использовать сервисы,
-внедренные в тестовый контекст.
+```php
+interface FindPets {
+  /** @return Pet[] */
+  public function do(?string $id, ?string $name): array;
+}
+```
+
+Он ищет петов по идентификатору, или по имени, или и по тому, и по другому. Он возвращает массив найденных петов, или
+пустой массив.
+
+Чтобы протестировать сервис FindPets, необходимо сначала заполнить базу данных. Для этого создаём класс фикстуры,
+реализовав интерфейс Fixture.
+
+```php
+class FindPets_Fixture implements Fixture {
+  const PET_1 = 'pet1';
+  const PET_2 = 'pet2';
+
+  public Pet $pet1;
+  public Pet $pet1_2;
+  public Pet $pet2;
+
+  public function __construct(
+    private CreatePet $createPet,
+  ) {
+  }
+
+  public function createData(): void {
+    $this->pet1 = $this->createPet->do(self::PET_1, Pet::CAT);
+    $this->pet1_2 = $this->createPet->do(self::PET_1, Pet::DOG);
+    $this->pet2 = $this->createPet->do(self::PET_2, Pet::CAT);
+  }
+}
+```
+
+Метод createData интерфейса Fixture как раз предназначен для создания начального состояния базы данных. Он будет вызван
+автоматически перед запуском теста.
+
+Опишем класс фикстуры как сервис, сделав его публичным:
+
+```yaml
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: true
+
+  Weasel\TestBench\Tests\UseCase\Pet\FindPets\FindPets_Fixture:
+```
+
+Теперь создадим тестовый класс, унаследовав его от класса DbTestCase из библиотеки Weasel:
+
+```php
+class FindPets_Test extends DbTestCase {
+  /** @RequiredForTest) */
+  private ?FindPets $findPets = null;
+  /** @RequiredForTest) */
+  private ?FindPets_Fixture $fixture = null;
+
+  public function testFindTwoByName() {
+    $pets = $this->findPets->do(null, $this->fixture::PET_1);
+    self::assertTrue(in_array($this->fixture->pet1, $pets));
+    self::assertTrue(in_array($this->fixture->pet1_2, $pets));
+    self::assertFalse(in_array($this->fixture->pet2, $pets));
+  }
+
+  public function testFindOneByName() {
+    $pets = $this->findPets->do(null, $this->fixture::PET_2);
+    self::assertCount(1, $pets);
+    self::assertEquals($this->fixture->pet2, $pets[0]);
+  }
+
+  public function testFindOneById() {
+    $pets = $this->findPets->do($this->fixture->pet1->getId(), null);
+    self::assertCount(1, $pets);
+    self::assertEquals($this->fixture->pet1, $pets[0]);
+  }
+}
+```
+
+Опишем в этом классе поля для сервиса FindPets и фикстуры. Пометим их аннотацией @RequiredForTest. Теперь при запуске
+теста в базовом методе setUp сервис FindPets и фикстура будут автоматически запрошены из контейнера зависимостей и
+присвоены соответствующим полям тестового класса. Затем у сервиса фикстуры будет вызван метод createData. И уже после
+этого будет выполнен тестовый метод, в котором можно свободно использовать сервисы, внедренные в тестовый контекст.
 
 ## Для чего необходима библиотека Weasel
 
@@ -72,12 +146,33 @@ class NewsletterGeneratorTest extends KernelTestCase {
 Для обычного Symfony-программиста получение сервиса напрямую из контейнера зависимостей является неестественной
 практикой. Мы привыкли получать сервисы с помощью внедрения их через параметры конструктора или через сетеры.
 
-Библиотека Weasel позволяет избавить программиста от явного обращения к контейнеру зависимостей, и получать все
-необходимые для теста сервисы, описав их привычным путём в тестовом контексте.
+Библиотека Weasel позволяет описывать необходимые для теста сервисы в виде полей в тестовом классе, пометив их
+аннотацией @RequiredForTest:
 
-## Классы Weasel 
+```php
+class FindPets_Test extends DbTestCase {
+  /** @RequiredForTest) */
+  private ?FindPets $findPets = null;
+  /** @RequiredForTest) */
+  private ?FindPets_Fixture $fixture = null;
+
+  public function testFindTwoByName() {
+    ...
+  }
+  
+  ...
+}
+```
+
+Это даёт возможность избавить программиста от явного обращения к контейнеру зависимостей, и получать все
+необходимые для теста сервисы просто описывая поля тестового класса. Таким образом, программист может сосредоточиться 
+на написании тестов, не отвлекаясь на написание однотипного кода для получения сервисов из контейнера зависимостей.
+
+## Классы Weasel
+
+Библиотека Weasel предоставляет несколько базовых классов для написания интеграционных и функциональных тестов:
 
 * KernelTestCase - для интеграционных тестов без использования базы данных
 * DbTestCase - для интеграционных тестов с использованием базы данных
 * WebTestCase - для функциональных тестов без использования базы данных
-* WebDbTestCase - для функциональных тестов с использованием базы данных
+* WebDbTestCase - для с тестов с использованием базы данных
