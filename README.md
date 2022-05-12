@@ -14,7 +14,7 @@ $ composer require --dev dab-libs/waesel-bundle
 
 ## Usage
 
-Suppose you want to test a pet search service by name or ID. This service implements the following interface:
+Suppose we want to test a pet search service by name or ID. This service implements the interface:
 
 ```php
 interface FindPets {
@@ -95,11 +95,11 @@ class FindPets_Test extends DbTestCase {
 }
 ```
 
-Next describe fields for the FindPets service and fixtures in this class. Mark them with the @RequiredForTest
-annotation. Now, the FindPets service and the fixture will be automatically requested from dependency container and
-assigned to the appropriate fields of the test class before running a test. It will be done in the setUp method of the
-base class. The fixture will then call the method createData. And after that, the test method will be executed, and we
-can use the services injected in the test class.
+Next we describe fields for the FindPets service and fixtures in this class. We mark them with the @RequiredForTest
+annotation. Now, the FindPets service and the fixture will be automatically requested from DI container and assigned to
+the appropriate fields before running a test. It will be done in the setUp method of the base class. Then the method
+createData of the fixture class will be called. And after that, the test method will be executed, and we can use the
+injected services.
 
 ## Why Weasel
 
@@ -129,7 +129,7 @@ class NewsletterGeneratorTest extends KernelTestCase {
 
 ### Symfony services in tests using Weasel
 
-For the average Symfony programmer, getting a service directly from a DI container is not a natural practice. We get
+Getting a service directly from a DI container is not a natural practice for the average Symfony programmer. We get
 services by injecting them through constructor parameters or through setters.
 
 The Weasel library allows us to get services by simply describing them as fields in the test case class and annotating
