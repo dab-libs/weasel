@@ -1,20 +1,20 @@
-# Библиотека Weasel
+<div align="right"><a href="README_ru.md">Русская версия</a></div>
 
-Weasel - это небольшая библиотека, предназначенная для упрощения интеграционного тестирования приложений на основе
-[Symfony](https://symfony.com/).
+# Weasel
 
-## Установка
+Weasel - is a small library designed to simplify integration testing of [Symfony](https://symfony.com/) applications.
 
-Установите, используя [Composer](https://getcomposer.org/):
+## Installation
+
+Install via [Composer](https://getcomposer.org/):
 
 ```shell
 $ composer require --dev dab-libs/waesel-bundle
 ```
 
-## Использование
+## Usage
 
-Пусть необходимо протестировать сервис поиска петов по имени или идентификатору. Этот сервис реализует следующий
-интерфейс:
+Suppose you want to test a pet search service by name or ID. This service implements the following interface:
 
 ```php
 interface FindPets {
@@ -23,11 +23,10 @@ interface FindPets {
 }
 ```
 
-Он ищет петов по идентификатору, или по имени, или и по тому, и по другому. Он возвращает массив найденных петов, или
-пустой массив.
+It finds pets by ID, by name, or both. It returns an array of found pets, or an empty array.
 
-Чтобы протестировать сервис FindPets, необходимо сначала заполнить базу данных. Для этого создаём класс фикстуры,
-реализовав интерфейс Fixture.
+To test the FindPets service, we must first create the initial state of the database. To do this, we create a fixture
+class by implementing the Fixture interface:
 
 ```php
 class FindPets_Fixture implements Fixture {
@@ -51,10 +50,10 @@ class FindPets_Fixture implements Fixture {
 }
 ```
 
-Метод createData интерфейса Fixture как раз предназначен для создания начального состояния базы данных. Он будет вызван
-автоматически перед запуском теста.
+The createData method of the Fixture interface is just designed to create the initial state of the database. It will be
+called automatically before running the test.
 
-Опишем класс фикстуры как сервис, сделав его публичным:
+Let's make the fixture class a public service:
 
 ```yaml
 services:
@@ -66,7 +65,7 @@ services:
   Weasel\TestBench\Tests\UseCase\Pet\FindPets\FindPets_Fixture:
 ```
 
-Теперь создадим тестовый класс, унаследовав его от класса DbTestCase из библиотеки Weasel:
+Now let's create a test case class by inheriting it from the DbTestCase class from the Weasel library:
 
 ```php
 class FindPets_Test extends DbTestCase {
@@ -96,36 +95,23 @@ class FindPets_Test extends DbTestCase {
 }
 ```
 
-Опишем в этом классе поля для сервиса FindPets и фикстуры. Пометим их аннотацией @RequiredForTest. Теперь при запуске
-теста в базовом методе setUp сервис FindPets и фикстура будут автоматически запрошены из контейнера зависимостей и
-присвоены соответствующим полям тестового класса. Затем у сервиса фикстуры будет вызван метод createData. И уже после
-этого будет выполнен тестовый метод, в котором можно свободно использовать сервисы, внедренные в тестовый класс.
+Next describe fields for the FindPets service and fixtures in this class. Mark them with the @RequiredForTest
+annotation. Now, the FindPets service and the fixture will be automatically requested from dependency container and
+assigned to the appropriate fields of the test class before running a test. It will be done in the setUp method of the
+base class. The fixture will then call the method createData. And after that, the test method will be executed, and we
+can use the services injected in the test class.
 
-## Для чего необходима библиотека Weasel
+## Why Weasel
 
-### Интеграционные тесты вместо модульных тестов
+### Symfony services in tests without Weasel
 
-Для большинства веб-приложений (в том числе, и основанных на Symfony) модульные тесты бесполезны. Это связанно с тем,
-что приложения на основе Symfony состоят из множества сервисов. Каждый из них реализует очень простые алгоритмы, но при
-этом зависит от большого количества других сервисов. Из-за этого модульные тесты зависят от большого количество
-мок-объектов. К сожалению, такие тесты малоэффективны или очень хрупки.
+Almost all functionality of Symfony based applications is implemented as services. When testing, these services must be
+obtained from the DI container. Symfony developers advise doing it
+like [this](https://symfony.com/doc/current/testing.html#integration-tests):
 
-С другой стороны, в этой ситуации интеграционные тесты позволяют протестировать процесс обработки каждого запроса. Они
-помогают проверить не только алгоритмы обработки данных, но и описание сервисов, используемых в обработке запроса, и их
-взаимодействие. Модульные тесты не позволяют выявить такие ошибки. Ошибки, связанные с загрузкой/выгрузкой данных из/в
-базу данных, тоже не поддаётся тестированию с помощью модульных тестов, но легко выявляются при интеграционном
-тестировании. При этом интеграционные тесты ломаются лишь при изменении формата или семантики входных и выходных данных.
-А это случается достаточно редко.
-
-### Сервисы Symfony в тестах без Weasel
-
-Практически весь функционал приложений на основе Symfony реализован в виде сервисов. При тестировании эти сервисы
-необходимо получить из DI-контейнера. Разработчики Symfony советуют делать это
-[следующим образом](https://symfony.com/doc/current/testing.html#integration-tests):
-
-1. инициализировать ядро Symfony,
-2. получить DI-контейнер с помощью метода getContainer класса KernelTestCase,
-3. получить из DI-контейнера необходимые для теста сервисы.
+1. initialize the Symfony kernel,
+2. get the DI container using the getContainer method of the KernelTestCase class,
+3. get the necessary services from the DI container.
 
 ```php 
 class NewsletterGeneratorTest extends KernelTestCase {
@@ -141,13 +127,13 @@ class NewsletterGeneratorTest extends KernelTestCase {
 }
 ```
 
-### Сервисы Symfony в тестах с использованием Weasel
+### Symfony services in tests using Weasel
 
-Для обычного Symfony-программиста получение сервиса напрямую из контейнера зависимостей является неестественной
-практикой. Мы привыкли получать сервисы с помощью внедрения их через параметры конструктора или через сетеры.
+For the average Symfony programmer, getting a service directly from a DI container is not a natural practice. We get
+services by injecting them through constructor parameters or through setters.
 
-Библиотека Weasel позволяет описывать необходимые для теста сервисы в виде полей в тестовом классе, пометив их
-аннотацией @RequiredForTest:
+The Weasel library allows us to get services by simply describing them as fields in the test case class and annotating
+them with the @RequiredForTest annotation:
 
 ```php
 class FindPets_Test extends DbTestCase {
@@ -164,15 +150,15 @@ class FindPets_Test extends DbTestCase {
 }
 ```
 
-Это даёт возможность избавить программиста от явного обращения к контейнеру зависимостей, и получать все
-необходимые для теста сервисы просто описывая поля тестового класса. Таким образом, программист может сосредоточиться 
-на написании тестов, не отвлекаясь на написание однотипного кода для получения сервисов из контейнера зависимостей.
+This saves the programmer from having to explicitly access the DI container and makes working with services simple and
+familiar. Now a programmer can focus on writing tests without being distracted by writing the same type of code to get
+services from the DI container.
 
-## Классы Weasel
+## Weasel classes
 
-Библиотека Weasel предоставляет несколько базовых классов для написания интеграционных и функциональных тестов:
+The Weasel library provides several base classes for writing integration and functional tests:
 
-* KernelTestCase - для интеграционных тестов без использования базы данных
-* DbTestCase - для интеграционных тестов с использованием базы данных
-* WebTestCase - для функциональных тестов без использования базы данных
-* WebDbTestCase - для с тестов с использованием базы данных
+* KernelTestCase - for integration tests without using a database
+* DbTestCase - for integration tests using a database
+* WebTestCase - for functional tests without using a database
+* WebDbTestCase - for functional tests using a database
