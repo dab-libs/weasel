@@ -1,6 +1,6 @@
-# Библиотека Weasel
+<div align="right"><a href="README.md">English version</a></div>
 
-<a href="README.md" align="right">English version</a>
+# Библиотека Weasel
 
 Weasel - это небольшая библиотека, предназначенная для упрощения интеграционного тестирования приложений на основе
 [Symfony](https://symfony.com/).
