@@ -1,7 +1,8 @@
 {
     "name": "dab-libs/waesel-bundle",
-    "version": "1.0.6",
+    "version": "1.0.8",
     "type": "symfony-bundle",
+    "description": "Small library designed to simplify integration testing of Symfony applications",
     "license": "MIT",
     "authors": [
         {
